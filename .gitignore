@@ -11,3 +11,4 @@ build
 target
 out
 newrelic/logs
+newrelic/newrelic.yml
