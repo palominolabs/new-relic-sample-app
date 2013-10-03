@@ -1,5 +1,8 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'application'
+
+mainClassName = 'com.palominolabs.newrelic.sample.NewRelicMain'
 
 group = 'com.palominolabs.newrelic.sample'
 version = '1.0.0-SNAPSHOT'
@@ -11,9 +14,12 @@ ext {
   depVersions = [
       jersey: '1.17.1',
       slf4j: '1.7.5',
-      jetty: '9.0.5.v20130815',
       guice: '3.0'
   ]
+}
+
+run {
+  jvmArgs "-javaagent:${project.projectDir}/newrelic/newrelic.jar"
 }
 
 dependencies {
@@ -21,7 +27,7 @@ dependencies {
 
   compile 'com.codahale.metrics:metrics-core:3.0.1'
   compile 'com.newrelic.agent.java:newrelic-api:2.21.4'
-  compile 'com.google.inject:guice:3.0'
+  compile "com.google.inject:guice:$depVersions.guice"
 
   runtime "org.slf4j:slf4j-simple:$depVersions.slf4j"
   runtime "org.slf4j:log4j-over-slf4j:$depVersions.slf4j"
@@ -32,11 +38,13 @@ dependencies {
   compile "com.sun.jersey:jersey-server:$depVersions.jersey"
   compile "com.sun.jersey:jersey-servlet:$depVersions.jersey"
 
-  compile 'com.palominolabs.metrics:metrics-new-relic:1.0.0-SNAPSHOT'
   compile 'com.palominolabs.jersey:jersey-metrics-filter:1.0.0-SNAPSHOT'
+  compile 'com.palominolabs.jersey:jersey-new-relic:1.0.0'
   compile 'com.palominolabs.http:jetty-http-server-wrapper:1.0.0-SNAPSHOT'
 
   compile 'com.google.code.findbugs:jsr305:2.0.1'
+
+  compile 'com.ning:async-http-client:1.7.20'
 }
 
 repositories {
