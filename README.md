@@ -2,6 +2,8 @@ This extremely simple HTTP service demonstrates the use of several libraries:
 - [jersey-metrics-filter](https://github.com/palominolabs/jersey-metrics-filter), automatic [metrics](http://metrics.codahale.com/) for all [Jersey](https://jersey.java.net/) resource methods
 - [jersey-new-relic](https://github.com/palominolabs/jersey-new-relic), Jersey integration into [New Relic](http://newrelic.com/) monitoring
 - [jetty-http-server-wrapper](https://github.com/palominolabs/jetty-http-server-wrapper), a simple wrapper around the [Jetty](http://www.eclipse.org/jetty/) http server
+- [jersey-cors-filter](https://github.com/palominolabs/jersey-cors-filter) to apply CORS headers to Jersey HTTP responses
+- [url-builder](https://github.com/palominolabs/url-builder) to safely build URLs
 
 To use it, all you need to do is copy `newrelic/newrelic.yml.template` to `newrelic/newrelic.yml` and edit the `license_key` field to have your New Relic license key. If you do not have a New Relic account, you can run it without doing this step and though you'll have a stack trace show up in the logs, everything except actually reporting data to New Relic's systems will still work fine.
 
