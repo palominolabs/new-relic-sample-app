@@ -5,6 +5,7 @@ import com.codahale.metrics.MetricRegistry
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Injector
+import com.google.inject.Scopes
 import com.google.inject.servlet.ServletModule
 import com.ning.http.client.AsyncHttpClient
 import com.palominolabs.config.ConfigModuleBuilder
@@ -13,6 +14,7 @@ import com.palominolabs.http.server.HttpServerWrapperConfig
 import com.palominolabs.http.server.HttpServerWrapperFactory
 import com.palominolabs.http.server.HttpServerWrapperModule
 import com.palominolabs.http.url.UrlBuilder
+import com.palominolabs.jersey.cors.CorsResourceFilterFactory
 import com.palominolabs.jersey.dispatchwrapper.ResourceMethodWrappedDispatchModule
 import com.palominolabs.jersey.newrelic.JerseyNewRelicModule
 import com.palominolabs.jersey.newrelic.NewRelicResourceFilterFactory
@@ -79,8 +81,9 @@ class SampleServiceMain {
         // register metric filter as well as new relic transaction name filter
         final Map<String, String> initParams = new HashMap<>()
         initParams.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-            [HttpStatusCodeCounterResourceFilterFactory, NewRelicResourceFilterFactory]
-                .join(','))
+            [HttpStatusCodeCounterResourceFilterFactory, NewRelicResourceFilterFactory, CorsResourceFilterFactory]
+              .collect({Class c -> c.canonicalName})
+              .join(','))
 
         install(new ServletModule() {
           @Override
