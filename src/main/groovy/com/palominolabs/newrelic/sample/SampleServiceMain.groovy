@@ -12,6 +12,7 @@ import com.palominolabs.http.server.HttpServerConnectorConfig
 import com.palominolabs.http.server.HttpServerWrapperConfig
 import com.palominolabs.http.server.HttpServerWrapperFactory
 import com.palominolabs.http.server.HttpServerWrapperModule
+import com.palominolabs.http.url.UrlBuilder
 import com.palominolabs.jersey.dispatchwrapper.ResourceMethodWrappedDispatchModule
 import com.palominolabs.jersey.newrelic.JerseyNewRelicModule
 import com.palominolabs.jersey.newrelic.NewRelicResourceFilterFactory
@@ -29,7 +30,10 @@ import java.util.logging.LogManager
 import javax.servlet.http.HttpServlet
 import org.slf4j.bridge.SLF4JBridgeHandler
 
-class NewRelicMain {
+class SampleServiceMain {
+  private static final String HOST = "localhost"
+  private static final int PORT = 8080
+
   public static void main(String[] args) {
 
     LogManager.getLogManager().reset()
@@ -37,19 +41,17 @@ class NewRelicMain {
 
     final MetricRegistry registry = new MetricRegistry()
 
-    Injector injector = getInjector(registry)
+    // start up an http server
+    HttpServerWrapperConfig config = new HttpServerWrapperConfig()
+        .withHttpServerConnectorConfig(HttpServerConnectorConfig.forHttp(HOST, PORT))
+
+    getInjector(registry).getInstance(HttpServerWrapperFactory.class)
+        .getHttpServerWrapper(config)
+        .start()
 
     // start a jmx reporter so you can inspect metrics with jconsole or visual vm
     JmxReporter reporter = JmxReporter.forRegistry(registry).build()
     reporter.start()
-
-    // start up an http server
-    HttpServerWrapperConfig config = new HttpServerWrapperConfig()
-        .withHttpServerConnectorConfig(HttpServerConnectorConfig.forHttp("localhost", 8080))
-
-    injector.getInstance(HttpServerWrapperFactory.class)
-        .getHttpServerWrapper(config)
-        .start()
 
     // execute some requests against our service
 
@@ -58,24 +60,26 @@ class NewRelicMain {
     AsyncHttpClient client = new AsyncHttpClient()
 
     svc.scheduleAtFixedRate({
-      client.prepareGet("http://localhost:8080/foo").execute().get()
-      client.prepareGet("http://localhost:8080/foo/bar").execute().get()
+      UrlBuilder builder = UrlBuilder.forHost("http", HOST, PORT).pathSegment("resource")
+      client.prepareGet(builder.toUrlString()).addHeader("Origin", HOST).execute().get()
+      client.prepareGet(builder.pathSegment("subresource").toUrlString()).execute().get()
     }, 0, 1, TimeUnit.SECONDS)
   }
 
   private static Injector getInjector(registry) {
-    Guice.createInjector(new AbstractModule() {
+    return Guice.createInjector(new AbstractModule() {
       @Override
       protected void configure() {
+        // we're using an http server
         install(new HttpServerWrapperModule())
 
-        bind(FooResource)
+        // bind the resource so GuiceContainer can find it
+        bind(SampleResource)
 
-        // register metric filter as well as new relic xaction name filter
+        // register metric filter as well as new relic transaction name filter
         final Map<String, String> initParams = new HashMap<>()
         initParams.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-            [HttpStatusCodeCounterResourceFilterFactory.class.getCanonicalName(),
-                NewRelicResourceFilterFactory.class.getCanonicalName()]
+            [HttpStatusCodeCounterResourceFilterFactory, NewRelicResourceFilterFactory]
                 .join(','))
 
         install(new ServletModule() {
@@ -93,7 +97,7 @@ class NewRelicMain {
           }
         })
 
-        // provide FeaturesAndProperties
+        // standard jersey-guice module
         install(new JerseyServletModule())
 
         // set up metrics for all resource methods

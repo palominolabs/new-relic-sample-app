@@ -2,7 +2,7 @@ apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'application'
 
-mainClassName = 'com.palominolabs.newrelic.sample.NewRelicMain'
+mainClassName = 'com.palominolabs.newrelic.sample.SampleServiceMain'
 
 group = 'com.palominolabs.newrelic.sample'
 version = '1.0.0-SNAPSHOT'
@@ -38,9 +38,11 @@ dependencies {
   compile "com.sun.jersey:jersey-server:$depVersions.jersey"
   compile "com.sun.jersey:jersey-servlet:$depVersions.jersey"
 
-  compile 'com.palominolabs.jersey:jersey-metrics-filter:1.0.0-SNAPSHOT'
+  compile 'com.palominolabs.jersey:jersey-metrics-filter:1.0.0'
   compile 'com.palominolabs.jersey:jersey-new-relic:1.0.0'
-  compile 'com.palominolabs.http:jetty-http-server-wrapper:1.0.0-SNAPSHOT'
+  compile 'com.palominolabs.http:jetty-http-server-wrapper:1.0.0'
+  compile 'com.palominolabs.http:url-builder:1.0.1'
+  compile 'com.palominolabs.jersey:jersey-cors-filter:1.0.1'
 
   compile 'com.google.code.findbugs:jsr305:2.0.1'
 
@@ -49,5 +51,4 @@ dependencies {
 
 repositories {
   mavenCentral()
-  mavenLocal()
 }
