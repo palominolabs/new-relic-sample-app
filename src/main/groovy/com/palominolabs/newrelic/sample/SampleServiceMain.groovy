@@ -8,6 +8,7 @@ import com.google.inject.Injector
 import com.google.inject.Scopes
 import com.google.inject.servlet.ServletModule
 import com.ning.http.client.AsyncHttpClient
+import com.ning.http.client.Response
 import com.palominolabs.config.ConfigModuleBuilder
 import com.palominolabs.http.server.HttpServerConnectorConfig
 import com.palominolabs.http.server.HttpServerWrapperConfig
@@ -30,9 +31,13 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.logging.LogManager
 import javax.servlet.http.HttpServlet
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.slf4j.bridge.SLF4JBridgeHandler
 
 class SampleServiceMain {
+  private static final Logger logger = LoggerFactory.getLogger(SampleServiceMain.class);
+
   private static final String HOST = "localhost"
   private static final int PORT = 8080
 
@@ -63,7 +68,10 @@ class SampleServiceMain {
 
     svc.scheduleAtFixedRate({
       UrlBuilder builder = UrlBuilder.forHost("http", HOST, PORT).pathSegment("resource")
-      client.prepareGet(builder.toUrlString()).addHeader("Origin", HOST).execute().get()
+
+      Response resp = client.prepareGet(builder.toUrlString()).addHeader("Origin", HOST).execute().get()
+      logger.info("Got allow-origin: ${resp.getHeader("Access-Control-Allow-Origin")}")
+
       client.prepareGet(builder.pathSegment("subresource").toUrlString()).execute().get()
     }, 0, 1, TimeUnit.SECONDS)
   }
